@@ -1,8 +1,9 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -20,13 +21,16 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var rb interface{}
-	err := json.NewDecoder(r.Body).Decode(&rb)
-	if err != nil {
-		app.errorLog.Println(err)
+	var bodyBytes bytes.Buffer
+	io.Copy(&bodyBytes, r.Body)
+
+	if !validJSONBytes(bodyBytes.Bytes()) {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
+
+	// do something with the resulting string of JSON, maybe put it in a database
+	jsonString := bodyBytes.String()
 
 	binID := r.URL.Query().Get(":binID")
 	if binID == "" {
@@ -35,7 +39,8 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("%v", rb)))
+	w.Write([]byte(fmt.Sprintf("Bin ID: %s\n", binID)))
+	w.Write([]byte(fmt.Sprintf("Posted JSON: %s", jsonString)))
 }
 
 func (app *application) getHooks(w http.ResponseWriter, r *http.Request) {
