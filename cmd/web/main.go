@@ -2,22 +2,28 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	_ "github.com/lib/pq"
+
 	"github.com/namsral/flag"
-	"github.com/wbaker85/tacklebox/pkg/models/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+
+	"github.com/wbaker85/tacklebox/pkg/models/mongodb"
+	"github.com/wbaker85/tacklebox/pkg/models/postgres"
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	hooks    *mongodb.HookModel
+	errorLog    *log.Logger
+	infoLog     *log.Logger
+	hooks       *mongodb.HookModel
+	hookRecords *postgres.HookRecordModel
 }
 
 func main() {
@@ -37,12 +43,21 @@ func main() {
 
 	col := mongoClient.Database("hooks").Collection("hooks")
 
+	pgDB, err := openPostgres("postgres://postgres:postgres@localhost/postgres?sslmode=disable")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer pgDB.Close()
+
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
 		hooks: &mongodb.HookModel{
 			Col: col,
 			Ctx: &ctx,
+		},
+		hookRecords: &postgres.HookRecordModel{
+			DB: pgDB,
 		},
 	}
 
@@ -69,4 +84,18 @@ func configMongoClient(ctx context.Context, uri string) (*mongo.Client, error) {
 	}
 
 	return client, nil
+}
+
+func openPostgres(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }

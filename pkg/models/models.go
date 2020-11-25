@@ -7,3 +7,10 @@ type HookDocument struct {
 	ID      *primitive.ObjectID `bson:"_id"`
 	Content string              `bson:"content"`
 }
+
+// HookRecord represents a row in a SQL database containing information about a stored document hook.
+type HookRecord struct {
+	ID     int
+	BinID  string
+	HookID string
+}

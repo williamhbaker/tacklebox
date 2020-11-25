@@ -4,14 +4,33 @@ services:
   mongo:
     image: mongo
     restart: always
-    container_name: "mongo"
+    container_name: 'mongo'
     ports:
-      - "27017:27017"
+      - '27017:27017'
+
+  postgres:
+    image: postgres
+    restart: always
+    container_name: 'pg'
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./dbinit/postgres:/docker-entrypoint-initdb.d/:ro
 
   mongoadmin:
-    restart: always
     image: mongo-express
     restart: always
-    container_name: "mongoadmin"
+    container_name: 'mongoadmin'
     ports:
-      - "8081:8081"
+      - '8081:8081'
+
+  adminer:
+    image: adminer
+    restart: always
+    container_name: 'postgresadmin'
+    ports:
+      - '8080:8080'
