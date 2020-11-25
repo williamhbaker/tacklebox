@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"sync"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -21,6 +22,12 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	binID := r.URL.Query().Get(":binID")
+	if binID == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	var buf bytes.Buffer
 	io.Copy(&buf, r.Body)
 	bytes := buf.Bytes()
@@ -32,19 +39,26 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 
 	id := primitive.NewObjectID()
 
-	app.hooks.InsertOne(&id, buf.String())
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	binID := r.URL.Query().Get(":binID")
-	if binID == "" {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
+	go func() {
+		defer wg.Done()
+		err := app.hooks.InsertOne(&id, buf.String())
+		if err != nil {
+			app.errorLog.Println(err)
+		}
+	}()
 
-	err := app.hookRecords.InsertOne(binID, id.Hex())
-	if err != nil {
-		app.errorLog.Println(err)
-	}
+	go func() {
+		defer wg.Done()
+		err := app.hookRecords.InsertOne(binID, id.Hex())
+		if err != nil {
+			app.errorLog.Println(err)
+		}
+	}()
 
+	wg.Wait()
 	w.WriteHeader(http.StatusOK)
 }
 

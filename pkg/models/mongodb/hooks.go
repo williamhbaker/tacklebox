@@ -21,6 +21,10 @@ func (m *HookModel) InsertOne(id *primitive.ObjectID, content string) error {
 		ID:      id,
 		Content: content,
 	}
-	m.Col.InsertOne(*m.Ctx, doc)
+	_, err := m.Col.InsertOne(*m.Ctx, doc)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
