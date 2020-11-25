@@ -10,18 +10,13 @@ type HookRecordModel struct {
 }
 
 // InsertOne is for adding one hook record to the database
-func (m *HookRecordModel) InsertOne(binID, hookID string) (int, error) {
-	stmt := `INSERT INTO records VALUES(bin_id, hook_id) ($1, $2)`
+func (m *HookRecordModel) InsertOne(binID, hookID string) error {
+	stmt := `INSERT INTO records (bin_id, hook_id, date) VALUES ($1, $2, CURRENT_TIMESTAMP);`
 
-	result, err := m.DB.Exec(stmt, binID, hookID)
+	_, err := m.DB.Exec(stmt, binID, hookID)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(id), nil
+	return nil
 }

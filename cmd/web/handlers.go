@@ -40,6 +40,11 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err := app.hookRecords.InsertOne(binID, id.Hex())
+	if err != nil {
+		app.errorLog.Println(err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
