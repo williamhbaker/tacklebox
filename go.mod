@@ -8,4 +8,5 @@ require (
 	github.com/lib/pq v1.8.0
 	github.com/namsral/flag v1.7.4-pre
 	go.mongodb.org/mongo-driver v1.4.3
+	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392
 )

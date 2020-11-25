@@ -24,6 +24,7 @@ type application struct {
 	infoLog     *log.Logger
 	hooks       *mongodb.HookModel
 	hookRecords *postgres.HookRecordModel
+	users       *postgres.UserModel
 }
 
 func main() {
@@ -50,15 +51,11 @@ func main() {
 	defer pgDB.Close()
 
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		hooks: &mongodb.HookModel{
-			Col: col,
-			Ctx: &ctx,
-		},
-		hookRecords: &postgres.HookRecordModel{
-			DB: pgDB,
-		},
+		errorLog:    errorLog,
+		infoLog:     infoLog,
+		hooks:       &mongodb.HookModel{Col: col, Ctx: &ctx},
+		hookRecords: &postgres.HookRecordModel{DB: pgDB},
+		users:       &postgres.UserModel{DB: pgDB},
 	}
 
 	srv := &http.Server{
