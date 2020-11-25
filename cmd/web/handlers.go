@@ -2,9 +2,10 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -12,7 +13,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
-
 	contentType := r.Header.Get("Content-Type")
 
 	if contentType != "application/json" {
@@ -21,16 +21,18 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var bodyBytes bytes.Buffer
-	io.Copy(&bodyBytes, r.Body)
+	var buf bytes.Buffer
+	io.Copy(&buf, r.Body)
+	bytes := buf.Bytes()
 
-	if !validJSONBytes(bodyBytes.Bytes()) {
+	if !validJSONBytes(bytes) {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 
-	// do something with the resulting string of JSON, maybe put it in a database
-	jsonString := bodyBytes.String()
+	id := primitive.NewObjectID()
+
+	app.hooks.InsertOne(&id, buf.String())
 
 	binID := r.URL.Query().Get(":binID")
 	if binID == "" {
@@ -39,8 +41,6 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("Bin ID: %s\n", binID)))
-	w.Write([]byte(fmt.Sprintf("Posted JSON: %s", jsonString)))
 }
 
 func (app *application) getHooks(w http.ResponseWriter, r *http.Request) {

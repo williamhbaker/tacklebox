@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/namsral/flag"
+	"github.com/wbaker85/tacklebox/pkg/models/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -16,7 +17,7 @@ import (
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
-	col      *mongo.Collection
+	hooks    *mongodb.HookModel
 }
 
 func main() {
@@ -39,7 +40,10 @@ func main() {
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
-		col:      col,
+		hooks: &mongodb.HookModel{
+			Col: col,
+			Ctx: &ctx,
+		},
 	}
 
 	srv := &http.Server{
