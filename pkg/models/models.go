@@ -10,6 +10,9 @@ import (
 var (
 	// ErrDuplicateEmail is generated if somebody tries to sign up with the same email twice
 	ErrDuplicateEmail = errors.New("models: duplicate email")
+
+	// ErrInvalidCredentials is generated if a user enters an invalid username and/or password
+	ErrInvalidCredentials = errors.New("models: invalid credentials")
 )
 
 // HookDocument is a BSON representation of a received webhook for storing in mongodb.

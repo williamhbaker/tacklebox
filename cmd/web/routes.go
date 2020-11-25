@@ -15,6 +15,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/hook/:binID", http.HandlerFunc(app.getHooks))
 	mux.Post("/hook/:binID", http.HandlerFunc(app.postHook))
 	mux.Post("/user", http.HandlerFunc(app.createUser))
+	mux.Post("/login", http.HandlerFunc(app.login))
 	mux.Get("/", http.HandlerFunc(app.home))
 
 	return standardMiddleware.Then(mux)

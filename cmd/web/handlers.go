@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/wbaker85/tacklebox/pkg/models"
@@ -13,13 +14,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type newUser struct {
+type userInfo struct {
 	Email    string
 	Password string
 }
 
-type emailAlreadyRegistered struct {
+type errJSON struct {
 	Error string `json:"error"`
+}
+
+type userIDJSON struct {
+	ID string `json:"id"`
 }
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -86,22 +91,56 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var u newUser
+	var u userInfo
 
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 	}
 
-	err = app.users.Insert(u.Email, u.Password)
+	newID, err := app.users.Insert(u.Email, u.Password)
 	if err != nil {
 		if errors.Is(err, models.ErrDuplicateEmail) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotAcceptable)
-			json.NewEncoder(w).Encode(emailAlreadyRegistered{"Email already registered"})
-
-		} else {
-			app.serverError(w, err)
+			json.NewEncoder(w).Encode(errJSON{"email already registered"})
+			return
 		}
+
+		app.serverError(w, err)
+		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(userIDJSON{strconv.Itoa(newID)})
+}
+
+func (app *application) login(w http.ResponseWriter, r *http.Request) {
+	contentType := r.Header.Get("Content-Type")
+
+	if contentType != "application/json" {
+		app.clientError(w, http.StatusUnsupportedMediaType)
+		return
+	}
+
+	var u userInfo
+	err := json.NewDecoder(r.Body).Decode(&u)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
+
+	id, err := app.users.Authenticate(u.Email, u.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(errJSON{"invalid credentials"})
+			return
+		}
+		app.serverError(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(userIDJSON{strconv.Itoa(id)})
 }
