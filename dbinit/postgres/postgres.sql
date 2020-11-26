@@ -7,13 +7,13 @@ CREATE TABLE users (
 
 CREATE TABLE bins (
   id varchar(50) PRIMARY KEY,
-  user_id integer REFERENCES users (id),
+  user_id integer REFERENCES users (id) ON DELETE CASCADE,
   created timestamp NOT NULL
 );
 
 CREATE TABLE records (
   id serial PRIMARY KEY,
-  bin_id varchar(50) REFERENCES bins (id),
+  bin_id varchar(50) REFERENCES bins (id) ON DELETE CASCADE,
   hook_id varchar(50) NOT NULL,
   created timestamp NOT NULL
 );
