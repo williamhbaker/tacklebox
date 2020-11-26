@@ -16,6 +16,9 @@ var (
 
 	// ErrInvalidUser is generated when something is done for a non-existent user ID
 	ErrInvalidUser = errors.New("models: invalid user")
+
+	// ErrInvalidBin is generated when a URL contains a non-existant bin ID
+	ErrInvalidBin = errors.New("models: invalid bin")
 )
 
 // HookDocument is a BSON representation of a received webhook for storing in mongodb.
