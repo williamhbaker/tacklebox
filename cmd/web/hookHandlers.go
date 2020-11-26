@@ -56,6 +56,14 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getHooks(w http.ResponseWriter, r *http.Request) {
+
+	/*
+		Get the binID from the URL
+		get the "records" from the relational database, and extract those into a list of document IDs
+		using the document IDs, get the list of documents from the document db
+		created a composite list from the two database results and write it to JSON response
+	*/
+
 	binID := r.URL.Query().Get(":binID")
 	if binID == "" {
 		w.WriteHeader(http.StatusNotFound)
@@ -79,25 +87,7 @@ func (app *application) getHooks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output := []models.HookData{}
-
-	for idx := range records {
-		h := models.HookData{}
-		h.ID = records[idx].HookID
-		h.BinID = records[idx].BinID
-		h.Created = records[idx].Created
-
-		var content string
-		for idx := 0; idx < len(hooks); idx++ {
-			if hooks[idx].ID.Hex() == h.ID {
-				content = hooks[idx].Content
-				break
-			}
-		}
-
-		h.Content = content
-		output = append(output, h)
-	}
+	output := assembleHookJSON(records, hooks)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(output)
