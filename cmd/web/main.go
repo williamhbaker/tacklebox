@@ -2,27 +2,39 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	_ "github.com/lib/pq"
+
+	"github.com/golangcollege/sessions"
 	"github.com/namsral/flag"
-	"github.com/wbaker85/tacklebox/pkg/models/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+
+	"github.com/wbaker85/tacklebox/pkg/models/mongodb"
+	"github.com/wbaker85/tacklebox/pkg/models/postgres"
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	hooks    *mongodb.HookModel
+	errorLog    *log.Logger
+	infoLog     *log.Logger
+	session     *sessions.Session
+	hooks       *mongodb.HookModel
+	hookRecords *postgres.HookRecordModel
+	users       *postgres.UserModel
 }
 
 func main() {
 	var port int
+	var secret string
 	flag.IntVar(&port, "port", 3000, "Port to start the server listening on")
+	flag.StringVar(&secret, "secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key for session cookies")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -37,13 +49,22 @@ func main() {
 
 	col := mongoClient.Database("hooks").Collection("hooks")
 
+	pgDB, err := openPostgres("postgres://postgres:postgres@localhost/postgres?sslmode=disable")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer pgDB.Close()
+
+	session := sessions.New([]byte(secret))
+	session.Lifetime = 12 * time.Hour
+
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		hooks: &mongodb.HookModel{
-			Col: col,
-			Ctx: &ctx,
-		},
+		errorLog:    errorLog,
+		infoLog:     infoLog,
+		session:     session,
+		hooks:       &mongodb.HookModel{Col: col, Ctx: &ctx},
+		hookRecords: &postgres.HookRecordModel{DB: pgDB},
+		users:       &postgres.UserModel{DB: pgDB},
 	}
 
 	srv := &http.Server{
@@ -69,4 +90,18 @@ func configMongoClient(ctx context.Context, uri string) (*mongo.Client, error) {
 	}
 
 	return client, nil
+}
+
+func openPostgres(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
