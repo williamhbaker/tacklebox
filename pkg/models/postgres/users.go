@@ -67,7 +67,21 @@ func (m *UserModel) Authenticate(email, password string) (int, error) {
 	return id, nil
 }
 
-// Get a user representation from an ID
+// Get a user representation from an ID.  Used to verify that a user ID is valid.
 func (m *UserModel) Get(id int) (*models.User, error) {
-	return nil, nil
+	stmt := `SELECT id, email, created FROM users
+					 WHERE id = $1`
+
+	u := &models.User{}
+
+	err := m.DB.QueryRow(stmt, id).Scan(&u.ID, &u.Email, &u.Created)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrInvalidUser
+		}
+
+		return nil, err
+	}
+
+	return u, nil
 }

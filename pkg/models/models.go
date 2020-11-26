@@ -13,6 +13,9 @@ var (
 
 	// ErrInvalidCredentials is generated if a user enters an invalid username and/or password
 	ErrInvalidCredentials = errors.New("models: invalid credentials")
+
+	// ErrInvalidUser is generated when something is done for a non-existent user ID
+	ErrInvalidUser = errors.New("models: invalid user")
 )
 
 // HookDocument is a BSON representation of a received webhook for storing in mongodb.
@@ -34,4 +37,11 @@ type User struct {
 	Email          string
 	HashedPassword []byte
 	Created        time.Time
+}
+
+// Bin is essentially a folder for hooks.  Bins are owned by a user.
+type Bin struct {
+	ID      string
+	UserID  int
+	Created time.Time
 }

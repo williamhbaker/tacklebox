@@ -21,6 +21,10 @@ import (
 	"github.com/wbaker85/tacklebox/pkg/models/postgres"
 )
 
+type contextKey string
+
+const contextKeyIsAuthenticated = contextKey("isAuthenticated")
+
 type application struct {
 	errorLog    *log.Logger
 	infoLog     *log.Logger
@@ -28,6 +32,7 @@ type application struct {
 	hooks       *mongodb.HookModel
 	hookRecords *postgres.HookRecordModel
 	users       *postgres.UserModel
+	bins        *postgres.BinModel
 }
 
 func main() {
@@ -65,6 +70,7 @@ func main() {
 		hooks:       &mongodb.HookModel{Col: col, Ctx: &ctx},
 		hookRecords: &postgres.HookRecordModel{DB: pgDB},
 		users:       &postgres.UserModel{DB: pgDB},
+		bins:        &postgres.BinModel{DB: pgDB},
 	}
 
 	srv := &http.Server{

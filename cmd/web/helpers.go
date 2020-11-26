@@ -7,6 +7,28 @@ import (
 	"runtime/debug"
 )
 
+type userInfo struct {
+	Email    string
+	Password string
+}
+
+type binInfo struct {
+	ID     string
+	UserID int
+}
+
+type errJSON struct {
+	Error string `json:"error"`
+}
+
+type infoJSON struct {
+	Info string `json:"message"`
+}
+
+type userIDJSON struct {
+	ID string `json:"id"`
+}
+
 func validJSONBytes(b []byte) bool {
 	var js json.RawMessage
 	return json.Unmarshal(b, &js) == nil
@@ -25,4 +47,13 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 
 func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
+}
+
+func (app *application) isAuthenticated(r *http.Request) bool {
+	isAuthenticated, ok := r.Context().Value(contextKeyIsAuthenticated).(bool)
+	if !ok {
+		return false
+	}
+
+	return isAuthenticated
 }
