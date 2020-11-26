@@ -14,10 +14,10 @@ func (app *application) routes() http.Handler {
 	mux := pat.New()
 
 	mux.Get("/hook/:binID", dynamicMiddleware.ThenFunc(app.getHooks))
-	mux.Post("/hook/:binID", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.postHook))
+	mux.Post("/hook/:binID", dynamicMiddleware.Append(app.requireJSON, app.requireAuth).ThenFunc(app.postHook))
 	mux.Post("/user", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.createUser))
 	mux.Post("/login", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.login))
-	mux.Post("/bin", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.createBin))
+	mux.Post("/bin", dynamicMiddleware.Append(app.requireJSON, app.requireAuth).ThenFunc(app.createBin))
 	mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
 
 	return standardMiddleware.Then(mux)
