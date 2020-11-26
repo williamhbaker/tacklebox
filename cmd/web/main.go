@@ -28,6 +28,7 @@ type application struct {
 	hooks       *mongodb.HookModel
 	hookRecords *postgres.HookRecordModel
 	users       *postgres.UserModel
+	bins        *postgres.BinModel
 }
 
 func main() {
@@ -65,6 +66,7 @@ func main() {
 		hooks:       &mongodb.HookModel{Col: col, Ctx: &ctx},
 		hookRecords: &postgres.HookRecordModel{DB: pgDB},
 		users:       &postgres.UserModel{DB: pgDB},
+		bins:        &postgres.BinModel{DB: pgDB},
 	}
 
 	srv := &http.Server{
