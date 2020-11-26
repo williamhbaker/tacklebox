@@ -7,9 +7,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 
+	"github.com/golangcollege/sessions"
 	"github.com/namsral/flag"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -22,6 +24,7 @@ import (
 type application struct {
 	errorLog    *log.Logger
 	infoLog     *log.Logger
+	session     *sessions.Session
 	hooks       *mongodb.HookModel
 	hookRecords *postgres.HookRecordModel
 	users       *postgres.UserModel
@@ -29,7 +32,9 @@ type application struct {
 
 func main() {
 	var port int
+	var secret string
 	flag.IntVar(&port, "port", 3000, "Port to start the server listening on")
+	flag.StringVar(&secret, "secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key for session cookies")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -50,9 +55,13 @@ func main() {
 	}
 	defer pgDB.Close()
 
+	session := sessions.New([]byte(secret))
+	session.Lifetime = 12 * time.Hour
+
 	app := &application{
 		errorLog:    errorLog,
 		infoLog:     infoLog,
+		session:     session,
 		hooks:       &mongodb.HookModel{Col: col, Ctx: &ctx},
 		hookRecords: &postgres.HookRecordModel{DB: pgDB},
 		users:       &postgres.UserModel{DB: pgDB},
