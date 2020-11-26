@@ -17,7 +17,6 @@ func (app *application) createBin(w http.ResponseWriter, r *http.Request) {
 	_, err := app.bins.Insert(binID, userID)
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidUser) {
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(errJSON{"invalid user"})
 			return
@@ -27,7 +26,6 @@ func (app *application) createBin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(infoJSON{binID})
 }
 
@@ -54,6 +52,5 @@ func (app *application) destroyBin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(infoJSON{"success"})
 }
