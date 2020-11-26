@@ -2,10 +2,11 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
-	"sync"
 
+	"github.com/wbaker85/tacklebox/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -31,27 +32,27 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 
 	id := primitive.NewObjectID()
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		err := app.hooks.InsertOne(&id, buf.String())
-		if err != nil {
-			app.errorLog.Println(err)
+	_, err := app.hookRecords.Insert(binID, id.Hex())
+	if err != nil {
+		if err == models.ErrInvalidBin {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(errJSON{"invalid bin"})
+			return
 		}
-	}()
+		app.serverError(w, err)
+		return
+	}
 
-	go func() {
-		defer wg.Done()
-		err := app.hookRecords.InsertOne(binID, id.Hex())
-		if err != nil {
-			app.errorLog.Println(err)
-		}
-	}()
+	_, err = app.hooks.Insert(buf.String(), &id)
+	if err != nil {
+		app.hookRecords.Destroy(id.Hex())
+		app.serverError(w, err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	wg.Wait()
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(infoJSON{"success"})
 }
 
 func (app *application) getHooks(w http.ResponseWriter, r *http.Request) {

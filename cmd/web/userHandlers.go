@@ -19,7 +19,6 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	_, err = app.users.Insert(u.Email, u.Password)
 	if err != nil {
 		if errors.Is(err, models.ErrDuplicateEmail) {
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(errJSON{"email already registered"})
 			return
@@ -29,7 +28,6 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(infoJSON{"success"})
 }
 
@@ -43,7 +41,6 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 	id, err := app.users.Authenticate(u.Email, u.Password)
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidCredentials) {
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(errJSON{"invalid credentials"})
 			return
@@ -54,6 +51,5 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 
 	app.session.Put(r, "authenticatedUserID", id)
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(infoJSON{"success"})
 }
