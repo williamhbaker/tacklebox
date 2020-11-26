@@ -44,3 +44,40 @@ func (m *HookModel) Destroy(id string) error {
 
 	return nil
 }
+
+// GetMany hooks from a given slice of document IDs
+func (m *HookModel) GetMany(docIDs []string) ([]*models.HookDocument, error) {
+	oids := make([]primitive.ObjectID, len(docIDs))
+	for idx := range docIDs {
+		objID, err := primitive.ObjectIDFromHex(docIDs[idx])
+		if err == nil {
+			oids[idx] = objID
+		}
+	}
+
+	query := bson.M{"_id": bson.M{"$in": oids}}
+
+	cursor, err := m.Col.Find(context.TODO(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	hooks := []*models.HookDocument{}
+	for cursor.Next(context.TODO()) {
+		d := &models.HookDocument{}
+		err = cursor.Decode(d)
+		if err != nil {
+			return nil, err
+		}
+
+		hooks = append(hooks, d)
+	}
+
+	err = cursor.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return hooks, nil
+}

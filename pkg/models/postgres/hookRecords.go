@@ -45,3 +45,34 @@ func (m *HookRecordModel) Destroy(hookID string) error {
 
 	return nil
 }
+
+// Get a slice containing all of the hooks for the provided binID
+func (m *HookRecordModel) Get(binID string) ([]*models.HookRecord, error) {
+	stmt := `SELECT id, bin_id, hook_id, created
+					 FROM records
+					 WHERE bin_id = $1`
+
+	rows, err := m.DB.Query(stmt, binID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	hooks := []*models.HookRecord{}
+	for rows.Next() {
+		h := &models.HookRecord{}
+		err = rows.Scan(&h.ID, &h.BinID, &h.HookID, &h.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		hooks = append(hooks, h)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return hooks, nil
+}

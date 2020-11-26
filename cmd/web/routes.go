@@ -13,8 +13,10 @@ func (app *application) routes() http.Handler {
 
 	mux := pat.New()
 
-	mux.Get("/hook/:binID", dynamicMiddleware.ThenFunc(app.getHooks))
-	mux.Post("/hook/:binID", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.postHook))
+	mux.Post("/hook/:binID", alice.New(app.requireJSON).ThenFunc(app.postHook))
+
+	mux.Get("/hook/:binID", dynamicMiddleware.Append(app.requireAuth).ThenFunc(app.getHooks))
+
 	mux.Post("/user", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.createUser))
 	mux.Post("/login", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.login))
 	mux.Post("/bin", dynamicMiddleware.Append(app.requireJSON, app.requireAuth).ThenFunc(app.createBin))

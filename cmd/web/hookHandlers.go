@@ -56,5 +56,49 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getHooks(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello from get hooks"))
+	binID := r.URL.Query().Get(":binID")
+	if binID == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	records, err := app.hookRecords.Get(binID)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	var docIDs []string
+	for _, record := range records {
+		docIDs = append(docIDs, record.HookID)
+	}
+
+	hooks, err := app.hooks.GetMany(docIDs)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	output := []models.HookData{}
+
+	for idx := range records {
+		h := models.HookData{}
+		h.ID = records[idx].HookID
+		h.BinID = records[idx].BinID
+		h.Created = records[idx].Created
+
+		var content string
+		for idx := 0; idx < len(hooks); idx++ {
+			if hooks[idx].ID.Hex() == h.ID {
+				content = hooks[idx].Content
+				break
+			}
+		}
+
+		h.Content = content
+		output = append(output, h)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(output)
 }
