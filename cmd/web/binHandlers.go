@@ -11,16 +11,10 @@ import (
 )
 
 func (app *application) createBin(w http.ResponseWriter, r *http.Request) {
-	var bin binInfo
+	userID := app.session.GetInt(r, "authenticatedUserID")
+	binID := uuid.New().String()
 
-	err := json.NewDecoder(r.Body).Decode(&bin)
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
-	bin.ID = uuid.New().String()
-	_, err = app.bins.Insert(bin.ID, bin.UserID)
+	_, err := app.bins.Insert(binID, userID)
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidUser) {
 			w.Header().Set("Content-Type", "application/json")
@@ -34,7 +28,7 @@ func (app *application) createBin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(&bin)
+	json.NewEncoder(w).Encode(infoJSON{binID})
 }
 
 func (app *application) getBinHooks(w http.ResponseWriter, r *http.Request) {

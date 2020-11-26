@@ -21,6 +21,10 @@ import (
 	"github.com/wbaker85/tacklebox/pkg/models/postgres"
 )
 
+type contextKey string
+
+const contextKeyIsAuthenticated = contextKey("isAuthenticated")
+
 type application struct {
 	errorLog    *log.Logger
 	infoLog     *log.Logger

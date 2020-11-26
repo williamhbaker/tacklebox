@@ -1,6 +1,12 @@
 package main
 
-import "net/http"
+import (
+	"context"
+	"errors"
+	"net/http"
+
+	"github.com/wbaker85/tacklebox/pkg/models"
+)
 
 func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -19,5 +25,30 @@ func (app *application) requireJSON(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := app.session.GetInt(r, "authenticatedUserID")
+		if id == 0 {
+			app.session.Remove(r, "authenticatedUserID")
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		_, err := app.users.Get(id)
+		if err != nil {
+			if errors.Is(err, models.ErrInvalidUser) {
+				app.session.Remove(r, "authenticatedUserID")
+				next.ServeHTTP(w, r)
+				return
+			}
+			app.serverError(w, err)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), contextKeyIsAuthenticated, true)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
