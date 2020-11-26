@@ -35,6 +35,25 @@ func (app *application) getBinHooks(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *application) deleteBin(w http.ResponseWriter, r *http.Request) {
+func (app *application) destroyBin(w http.ResponseWriter, r *http.Request) {
+	bin := &binInfo{}
 
+	err := json.NewDecoder(r.Body).Decode(bin)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
+
+	bin.UserID = app.session.GetInt(r, "authenticatedUserID")
+	err = app.bins.Destroy(bin.ID, bin.UserID)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		app.serverError(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(infoJSON{"success"})
 }
