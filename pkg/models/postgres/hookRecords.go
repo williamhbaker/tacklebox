@@ -46,7 +46,7 @@ func (m *HookRecordModel) Destroy(hookID string) error {
 	return nil
 }
 
-// Get a slice containing all of the hooks for the provided binID
+// Get a slice containing all of the hooks for the provided binID belonging to the userID
 func (m *HookRecordModel) Get(binID string) ([]*models.HookRecord, error) {
 	stmt := `SELECT id, bin_id, hook_id, created
 					 FROM records
@@ -75,4 +75,24 @@ func (m *HookRecordModel) Get(binID string) ([]*models.HookRecord, error) {
 	}
 
 	return hooks, nil
+}
+
+// CheckOwnership verifies that a provider userID has access to a binID for deleting, reading, etc.
+func (m *HookRecordModel) CheckOwnership(userID int, binID string) (bool, error) {
+	stmt := `SELECT user_id
+					 FROM bins
+					 WHERE id = $1`
+
+	rows := m.DB.QueryRow(stmt, binID)
+
+	var res int
+	err := rows.Scan(&res)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, models.ErrInvalidBin
+		}
+		return false, err
+	}
+
+	return res == userID, nil
 }
