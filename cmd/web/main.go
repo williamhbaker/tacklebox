@@ -38,15 +38,19 @@ type application struct {
 func main() {
 	var port int
 	var secret string
+	var pgDSN string
+	var mongoDSN string
 	flag.IntVar(&port, "port", 3000, "Port to start the server listening on")
 	flag.StringVar(&secret, "secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key for session cookies")
+	flag.StringVar(&pgDSN, "pgDSN", "postgres://postgres:postgres@localhost/postgres?sslmode=disable", "Connection string for postgres")
+	flag.StringVar(&mongoDSN, "mongoDSN", "mongodb://localhost:27017", "Connection string for MongoDB")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	ctx := context.TODO()
-	mongoClient, err := configMongoClient(ctx, "mongodb://localhost:27017")
+	mongoClient, err := configMongoClient(ctx, mongoDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,7 +58,7 @@ func main() {
 
 	col := mongoClient.Database("hooks").Collection("hooks")
 
-	pgDB, err := openPostgres("postgres://postgres:postgres@localhost/postgres?sslmode=disable")
+	pgDB, err := openPostgres(pgDSN)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
