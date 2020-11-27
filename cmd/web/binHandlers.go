@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"sync"
 
 	"github.com/wbaker85/tacklebox/pkg/models"
 
@@ -38,10 +39,7 @@ func (app *application) getBinHooks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var docIDs []string
-	for _, record := range records {
-		docIDs = append(docIDs, record.HookID)
-	}
+	docIDs := docIDsFromRecords(records)
 
 	hooks, err := app.hooks.GetMany(docIDs)
 	if err != nil {
@@ -57,8 +55,37 @@ func (app *application) getBinHooks(w http.ResponseWriter, r *http.Request) {
 func (app *application) destroyBin(w http.ResponseWriter, r *http.Request) {
 	binID := r.URL.Query().Get(":binID")
 
-	_, err := app.bins.Destroy(binID)
+	records, err := app.hookRecords.Get(binID)
 	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	docIDs := docIDsFromRecords(records)
+
+	var foundErr error
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		_, err = app.hooks.DestroyMany(docIDs)
+		if err != nil {
+			foundErr = err
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		_, err = app.bins.Destroy(binID)
+		if err != nil {
+			foundErr = err
+		}
+	}()
+
+	wg.Wait()
+
+	if foundErr != nil {
 		app.serverError(w, err)
 		return
 	}

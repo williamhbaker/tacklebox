@@ -30,30 +30,9 @@ func (m *HookModel) Insert(content string, id *primitive.ObjectID) (string, erro
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-// Destroy is for deleting a document from the database by ID (string)
-func (m *HookModel) Destroy(id string) error {
-	pid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return err
-	}
-
-	_, err = m.Col.DeleteOne(*m.Ctx, bson.M{"_id": pid})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // GetMany hooks from a given slice of document IDs
 func (m *HookModel) GetMany(docIDs []string) ([]*models.HookDocument, error) {
-	oids := make([]primitive.ObjectID, len(docIDs))
-	for idx := range docIDs {
-		objID, err := primitive.ObjectIDFromHex(docIDs[idx])
-		if err == nil {
-			oids[idx] = objID
-		}
-	}
+	oids := docIDsToOIDS(docIDs)
 
 	query := bson.M{"_id": bson.M{"$in": oids}}
 
@@ -80,4 +59,29 @@ func (m *HookModel) GetMany(docIDs []string) ([]*models.HookDocument, error) {
 	}
 
 	return hooks, nil
+}
+
+// DestroyMany deletes many hooks, given a slice of document IDs
+func (m *HookModel) DestroyMany(docIDs []string) (int, error) {
+	oids := docIDsToOIDS(docIDs)
+
+	query := bson.M{"_id": bson.M{"$in": oids}}
+
+	res, err := m.Col.DeleteMany(context.TODO(), query)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(res.DeletedCount), nil
+}
+
+func docIDsToOIDS(docIDs []string) []primitive.ObjectID {
+	oids := make([]primitive.ObjectID, len(docIDs))
+	for idx := range docIDs {
+		objID, err := primitive.ObjectIDFromHex(docIDs[idx])
+		if err == nil {
+			oids[idx] = objID
+		}
+	}
+	return oids
 }

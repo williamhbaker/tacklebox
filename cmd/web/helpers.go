@@ -60,6 +60,14 @@ func assembleHookJSON(r []*models.HookRecord, d []*models.HookDocument) []models
 	return output
 }
 
+func docIDsFromRecords(recs []*models.HookRecord) []string {
+	var docIDs []string
+	for _, r := range recs {
+		docIDs = append(docIDs, r.HookID)
+	}
+	return docIDs
+}
+
 func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	app.errorLog.Output(2, trace)
