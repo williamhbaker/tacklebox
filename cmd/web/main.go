@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
 	_ "github.com/lib/pq"
 
+	"github.com/caddyserver/certmagic"
 	"github.com/golangcollege/sessions"
 	"github.com/namsral/flag"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,15 +37,26 @@ type application struct {
 func main() {
 	var port int
 	var secret string
-	flag.IntVar(&port, "port", 3000, "Port to start the server listening on")
-	flag.StringVar(&secret, "secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key for session cookies")
+	var pgDSN string
+	var mongoDSN string
+	var domain string
+	var email string
+	var staging bool
+
+	flag.IntVar(&port, "port", 443, "Port to start the server listening on")
+	flag.StringVar(&secret, "secret", "cookiesecret!", "Secret key for session cookies")
+	flag.StringVar(&pgDSN, "pgDSN", "postgres://postgres:postgres@localhost/postgres?sslmode=disable", "Connection string for postgres")
+	flag.StringVar(&mongoDSN, "mongoDSN", "mongodb://localhost:27017", "Connection string for MongoDB")
+	flag.StringVar(&domain, "domain", "", "Domain to request a certificate for")
+	flag.StringVar(&email, "email", "email@domain.com", "Email to use with lets encrypt")
+	flag.BoolVar(&staging, "staging", true, "Staging for certs - true for staging, false for real")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	ctx := context.TODO()
-	mongoClient, err := configMongoClient(ctx, "mongodb://localhost:27017")
+	mongoClient, err := configMongoClient(ctx, mongoDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,7 +64,7 @@ func main() {
 
 	col := mongoClient.Database("hooks").Collection("hooks")
 
-	pgDB, err := openPostgres("postgres://postgres:postgres@localhost/postgres?sslmode=disable")
+	pgDB, err := openPostgres(pgDSN)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -73,14 +83,14 @@ func main() {
 		bins:        &postgres.BinModel{DB: pgDB},
 	}
 
-	srv := &http.Server{
-		Addr:     fmt.Sprintf(":%d", port),
-		ErrorLog: errorLog,
-		Handler:  app.routes(),
+	certmagic.DefaultACME.Agreed = true
+	certmagic.DefaultACME.Email = email
+	if staging {
+		certmagic.DefaultACME.CA = certmagic.LetsEncryptStagingCA
 	}
 
-	infoLog.Printf("Starting server on %d\n", port)
-	err = srv.ListenAndServe()
+	infoLog.Printf("Server starting")
+	err = certmagic.HTTPS([]string{domain}, app.routes())
 	errorLog.Fatal(err)
 }
 
