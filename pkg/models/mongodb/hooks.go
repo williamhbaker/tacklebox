@@ -30,6 +30,20 @@ func (m *HookModel) Insert(content string, id *primitive.ObjectID) (string, erro
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
+// GetOne hook document given the docID
+func (m *HookModel) GetOne(docID string) (*models.HookDocument, error) {
+	oid, _ := primitive.ObjectIDFromHex(docID)
+
+	query := bson.M{"_id": oid}
+	h := &models.HookDocument{}
+	err := m.Col.FindOne(context.TODO(), query).Decode(h)
+	if err != nil {
+		return nil, err
+	}
+
+	return h, nil
+}
+
 // GetMany hooks from a given slice of document IDs
 func (m *HookModel) GetMany(docIDs []string) ([]*models.HookDocument, error) {
 	oids := docIDsToOIDS(docIDs)

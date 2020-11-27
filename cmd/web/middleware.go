@@ -91,3 +91,29 @@ func (app *application) checkAccessForBin(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (app *application) checkAccessForHook(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hookID := r.URL.Query().Get(":hookID")
+		userID := app.session.GetInt(r, "authenticatedUserID")
+
+		hasAccess, err := app.hookRecords.CheckRecordOwnership(userID, hookID)
+		if err != nil {
+			if err == models.ErrInvalidHook {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusNotFound)
+				json.NewEncoder(w).Encode(infoJSON{"hook not found"})
+				return
+			}
+			app.serverError(w, err)
+			return
+		}
+
+		if !hasAccess {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}

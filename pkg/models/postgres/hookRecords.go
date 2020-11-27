@@ -77,6 +77,26 @@ func (m *HookRecordModel) Get(binID string) ([]*models.HookRecord, error) {
 	return hooks, nil
 }
 
+// GetOne returns a single hook record, given a hook ID
+func (m *HookRecordModel) GetOne(hookID string) (*models.HookRecord, error) {
+	stmt := `SELECT bin_id, hook_id, created
+					 FROM records
+					 WHERE hook_id = $1`
+
+	row := m.DB.QueryRow(stmt, hookID)
+
+	res := &models.HookRecord{}
+	err := row.Scan(&res.BinID, &res.HookID, &res.Created)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrInvalidHook
+		}
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // CheckBinOwnership verifies that a provider userID has access to a binID for deleting, reading, etc.
 func (m *HookRecordModel) CheckBinOwnership(userID int, binID string) (bool, error) {
 	stmt := `SELECT user_id

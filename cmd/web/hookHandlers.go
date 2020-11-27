@@ -56,26 +56,35 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(infoJSON{"success"})
 }
 
-func (app *application) destroyHook(w http.ResponseWriter, r *http.Request) {
+func (app *application) getHook(w http.ResponseWriter, r *http.Request) {
 	hookID := r.URL.Query().Get(":hookID")
-	userID := app.session.GetInt(r, "authenticatedUserID")
 
-	hasAccess, err := app.hookRecords.CheckRecordOwnership(userID, hookID)
+	record, err := app.hookRecords.GetOne(hookID)
 	if err != nil {
 		if err == models.ErrInvalidHook {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(infoJSON{"hook not found"})
+			json.NewEncoder(w).Encode(errJSON{"hook not found"})
 			return
 		}
 		app.serverError(w, err)
 		return
 	}
 
-	if !hasAccess {
-		w.WriteHeader(http.StatusForbidden)
+	doc, err := app.hooks.GetOne(hookID)
+	if err != nil {
+		app.serverError(w, err)
 		return
 	}
+
+	output := assembleHookJSON([]*models.HookRecord{record}, []*models.HookDocument{doc})
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(output[0])
+}
+
+func (app *application) destroyHook(w http.ResponseWriter, r *http.Request) {
+	hookID := r.URL.Query().Get(":hookID")
 
 	var foundErr error
 	var wg sync.WaitGroup
@@ -83,7 +92,7 @@ func (app *application) destroyHook(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer wg.Done()
-		err = app.hookRecords.Destroy(hookID)
+		err := app.hookRecords.Destroy(hookID)
 		if err != nil {
 			foundErr = err
 		}
@@ -91,7 +100,7 @@ func (app *application) destroyHook(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer wg.Done()
-		_, err = app.hooks.DestroyOne(hookID)
+		_, err := app.hooks.DestroyOne(hookID)
 		if err != nil {
 			foundErr = err
 		}
