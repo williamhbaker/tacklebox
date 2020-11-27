@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/wbaker85/tacklebox/pkg/models"
 
@@ -93,4 +94,30 @@ func (app *application) destroyBin(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(infoJSON{"success"})
+}
+
+func (app *application) getUserBins(w http.ResponseWriter, r *http.Request) {
+	userID := app.session.GetInt(r, "authenticatedUserID")
+
+	bins, err := app.bins.GetUserBins(userID)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	type resultBin struct {
+		ID      string
+		Created time.Time
+	}
+
+	res := make([]*resultBin, len(bins))
+	for idx := range res {
+		res[idx] = &resultBin{
+			ID:      bins[idx].ID,
+			Created: bins[idx].Created,
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
 }

@@ -50,3 +50,34 @@ func (m *BinModel) Destroy(binID string) (string, error) {
 
 	return deletedID, nil
 }
+
+// GetUserBins returns a slice of all of the bins for a specified UserID
+func (m *BinModel) GetUserBins(userID int) ([]*models.Bin, error) {
+	stmt := `SELECT id, user_id, created
+					 FROM bins
+					 WHERE user_id = $1`
+
+	rows, err := m.DB.Query(stmt, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bins := []*models.Bin{}
+	for rows.Next() {
+		b := &models.Bin{}
+		err = rows.Scan(&b.ID, &b.UserID, &b.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		bins = append(bins, b)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return bins, nil
+}
