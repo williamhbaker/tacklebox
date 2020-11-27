@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+
+	"github.com/wbaker85/tacklebox/pkg/models"
 )
 
 type userInfo struct {
@@ -32,6 +34,38 @@ type userIDJSON struct {
 func validJSONBytes(b []byte) bool {
 	var js json.RawMessage
 	return json.Unmarshal(b, &js) == nil
+}
+
+func assembleHookJSON(r []*models.HookRecord, d []*models.HookDocument) []models.HookData {
+	output := []models.HookData{}
+
+	for idx := range r {
+		h := models.HookData{}
+		h.ID = r[idx].HookID
+		h.BinID = r[idx].BinID
+		h.Created = r[idx].Created
+
+		var content string
+		for idx := 0; idx < len(d); idx++ {
+			if d[idx].ID.Hex() == h.ID {
+				content = d[idx].Content
+				break
+			}
+		}
+
+		h.Content = content
+		output = append(output, h)
+	}
+
+	return output
+}
+
+func docIDsFromRecords(recs []*models.HookRecord) []string {
+	var docIDs []string
+	for _, r := range recs {
+		docIDs = append(docIDs, r.HookID)
+	}
+	return docIDs
 }
 
 func (app *application) serverError(w http.ResponseWriter, err error) {

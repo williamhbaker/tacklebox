@@ -37,19 +37,47 @@ func (m *BinModel) Insert(id string, userID int) (string, error) {
 }
 
 // Destroy a bin - delete it from the database
-func (m *BinModel) Destroy(binID string, userID int) error {
+func (m *BinModel) Destroy(binID string) (string, error) {
 	stmt := `DELETE FROM bins
-					 WHERE id = $1 AND user_id = $2
+					 WHERE id = $1
 					 RETURNING id`
 
 	var deletedID string
-	err := m.DB.QueryRow(stmt, binID, userID).Scan(&deletedID)
+	err := m.DB.QueryRow(stmt, binID).Scan(&deletedID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return models.ErrInvalidCredentials
-		}
-		return err
+		return "", err
 	}
 
-	return nil
+	return deletedID, nil
+}
+
+// GetUserBins returns a slice of all of the bins for a specified UserID
+func (m *BinModel) GetUserBins(userID int) ([]*models.Bin, error) {
+	stmt := `SELECT id, user_id, created
+					 FROM bins
+					 WHERE user_id = $1`
+
+	rows, err := m.DB.Query(stmt, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bins := []*models.Bin{}
+	for rows.Next() {
+		b := &models.Bin{}
+		err = rows.Scan(&b.ID, &b.UserID, &b.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		bins = append(bins, b)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return bins, nil
 }

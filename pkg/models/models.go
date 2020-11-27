@@ -19,6 +19,9 @@ var (
 
 	// ErrInvalidBin is generated when a URL contains a non-existant bin ID
 	ErrInvalidBin = errors.New("models: invalid bin")
+
+	// ErrInvalidHook is generated when a hook can't be found
+	ErrInvalidHook = errors.New("models: invalid hook")
 )
 
 // HookDocument is a BSON representation of a received webhook for storing in mongodb.
@@ -29,9 +32,18 @@ type HookDocument struct {
 
 // HookRecord represents a row in a SQL database containing information about a stored document hook.
 type HookRecord struct {
-	ID     int
-	BinID  string
-	HookID string
+	ID      int
+	BinID   string
+	HookID  string
+	Created time.Time
+}
+
+// HookData is the relevant data for a hook, for presenting as a JSON response to a client request
+type HookData struct {
+	ID      string
+	BinID   string
+	Content string
+	Created time.Time
 }
 
 // User is a registered user of the application
