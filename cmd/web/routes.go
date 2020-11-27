@@ -15,12 +15,14 @@ func (app *application) routes() http.Handler {
 
 	mux.Post("/hook/:binID", alice.New(app.requireJSON).ThenFunc(app.postHook))
 
-	mux.Get("/hook/:binID", dynamicMiddleware.Append(app.requireAuth).ThenFunc(app.getHooks))
+	mux.Get("/bin/:binID", dynamicMiddleware.Append(app.requireAuth, app.checkAccessForBin).ThenFunc(app.getBinHooks))
+	mux.Del("/bin/:binID", dynamicMiddleware.Append(app.requireAuth, app.checkAccessForBin).ThenFunc(app.destroyBin))
+
+	mux.Post("/bin", dynamicMiddleware.Append(app.requireJSON, app.requireAuth).ThenFunc(app.createBin))
 
 	mux.Post("/user", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.createUser))
 	mux.Post("/login", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.login))
-	mux.Post("/bin", dynamicMiddleware.Append(app.requireJSON, app.requireAuth).ThenFunc(app.createBin))
-	mux.Del("/bin", dynamicMiddleware.Append(app.requireJSON, app.requireAuth).ThenFunc(app.destroyBin))
+
 	mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
 
 	return standardMiddleware.Then(mux)

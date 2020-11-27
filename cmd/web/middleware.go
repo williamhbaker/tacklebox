@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -57,10 +58,36 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 func (app *application) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !app.isAuthenticated(r) {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		w.Header().Add("Cache-Control", "no-store")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) checkAccessForBin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userID := app.session.GetInt(r, "authenticatedUserID")
+		binID := r.URL.Query().Get(":binID")
+
+		hasAccess, err := app.hookRecords.CheckOwnership(userID, binID)
+		if err != nil {
+			if err == models.ErrInvalidBin {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Header().Set("Content-Type", "application/json")
+				json.NewEncoder(w).Encode(errJSON{"invalid bin"})
+				return
+			}
+			app.serverError(w, err)
+			return
+		}
+
+		if !hasAccess {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }

@@ -37,19 +37,16 @@ func (m *BinModel) Insert(id string, userID int) (string, error) {
 }
 
 // Destroy a bin - delete it from the database
-func (m *BinModel) Destroy(binID string, userID int) error {
+func (m *BinModel) Destroy(binID string) (string, error) {
 	stmt := `DELETE FROM bins
-					 WHERE id = $1 AND user_id = $2
+					 WHERE id = $1
 					 RETURNING id`
 
 	var deletedID string
-	err := m.DB.QueryRow(stmt, binID, userID).Scan(&deletedID)
+	err := m.DB.QueryRow(stmt, binID).Scan(&deletedID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return models.ErrInvalidCredentials
-		}
-		return err
+		return "", err
 	}
 
-	return nil
+	return deletedID, nil
 }
