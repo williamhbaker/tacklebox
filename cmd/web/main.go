@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -49,7 +50,7 @@ func main() {
 	flag.StringVar(&mongoDSN, "mongoDSN", "mongodb://localhost:27017", "Connection string for MongoDB")
 	flag.StringVar(&domain, "domain", "", "Domain to request a certificate for")
 	flag.StringVar(&email, "email", "email@domain.com", "Email to use with lets encrypt")
-	flag.BoolVar(&staging, "staging", true, "Staging for certs - true for staging, false for real")
+	flag.BoolVar(&staging, "staging", false, "Staging for certs")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -86,6 +87,7 @@ func main() {
 	certmagic.DefaultACME.Agreed = true
 	certmagic.DefaultACME.Email = email
 	if staging {
+		fmt.Println(staging)
 		certmagic.DefaultACME.CA = certmagic.LetsEncryptStagingCA
 	}
 
