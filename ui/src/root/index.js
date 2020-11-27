@@ -10,13 +10,18 @@ import {
 import store from './store';
 
 import NavBar from 'components/navbar';
+import LogInForm from 'components/login';
 
 const Root = () => (
   <Provider store={store}>
     <Router>
       <NavBar />
 
-      <Switch></Switch>
+      <Switch>
+        <Route exact path="/login">
+          <LogInForm />
+        </Route>
+      </Switch>
     </Router>
   </Provider>
 );
