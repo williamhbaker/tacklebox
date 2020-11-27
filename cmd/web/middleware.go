@@ -71,7 +71,7 @@ func (app *application) checkAccessForBin(next http.Handler) http.Handler {
 		userID := app.session.GetInt(r, "authenticatedUserID")
 		binID := r.URL.Query().Get(":binID")
 
-		hasAccess, err := app.hookRecords.CheckOwnership(userID, binID)
+		hasAccess, err := app.hookRecords.CheckBinOwnership(userID, binID)
 		if err != nil {
 			if err == models.ErrInvalidBin {
 				w.WriteHeader(http.StatusBadRequest)

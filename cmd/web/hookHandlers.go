@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"sync"
 
 	"github.com/wbaker85/tacklebox/pkg/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -52,5 +53,57 @@ func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(infoJSON{"success"})
+}
+
+func (app *application) destroyHook(w http.ResponseWriter, r *http.Request) {
+	hookID := r.URL.Query().Get(":hookID")
+	userID := app.session.GetInt(r, "authenticatedUserID")
+
+	hasAccess, err := app.hookRecords.CheckRecordOwnership(userID, hookID)
+	if err != nil {
+		if err == models.ErrInvalidHook {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(infoJSON{"hook not found"})
+			return
+		}
+		app.serverError(w, err)
+		return
+	}
+
+	if !hasAccess {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	var foundErr error
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		err = app.hookRecords.Destroy(hookID)
+		if err != nil {
+			foundErr = err
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		_, err = app.hooks.DestroyOne(hookID)
+		if err != nil {
+			foundErr = err
+		}
+	}()
+
+	wg.Wait()
+
+	if foundErr != nil {
+		app.serverError(w, foundErr)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(infoJSON{"success"})
 }

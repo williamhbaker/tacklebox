@@ -61,6 +61,19 @@ func (m *HookModel) GetMany(docIDs []string) ([]*models.HookDocument, error) {
 	return hooks, nil
 }
 
+// DestroyOne deletes a single hook document, given a string ID
+func (m *HookModel) DestroyOne(docID string) (int, error) {
+	oid, _ := primitive.ObjectIDFromHex(docID)
+	query := bson.M{"_id": oid}
+
+	res, err := m.Col.DeleteOne(context.TODO(), query)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(res.DeletedCount), nil
+}
+
 // DestroyMany deletes many hooks, given a slice of document IDs
 func (m *HookModel) DestroyMany(docIDs []string) (int, error) {
 	oids := docIDsToOIDS(docIDs)

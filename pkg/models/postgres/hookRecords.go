@@ -77,19 +77,40 @@ func (m *HookRecordModel) Get(binID string) ([]*models.HookRecord, error) {
 	return hooks, nil
 }
 
-// CheckOwnership verifies that a provider userID has access to a binID for deleting, reading, etc.
-func (m *HookRecordModel) CheckOwnership(userID int, binID string) (bool, error) {
+// CheckBinOwnership verifies that a provider userID has access to a binID for deleting, reading, etc.
+func (m *HookRecordModel) CheckBinOwnership(userID int, binID string) (bool, error) {
 	stmt := `SELECT user_id
 					 FROM bins
 					 WHERE id = $1`
 
-	rows := m.DB.QueryRow(stmt, binID)
+	row := m.DB.QueryRow(stmt, binID)
 
 	var res int
-	err := rows.Scan(&res)
+	err := row.Scan(&res)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, models.ErrInvalidBin
+		}
+		return false, err
+	}
+
+	return res == userID, nil
+}
+
+// CheckRecordOwnership verifies that a hook record belongs to the given user
+func (m *HookRecordModel) CheckRecordOwnership(userID int, hookID string) (bool, error) {
+	stmt := `SELECT b.user_id
+					 FROM records AS r
+					 INNER JOIN bins AS b ON r.bin_id = b.id
+					 WHERE r.hook_id = $1`
+
+	row := m.DB.QueryRow(stmt, hookID)
+
+	var res int
+	err := row.Scan(&res)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, models.ErrInvalidHook
 		}
 		return false, err
 	}

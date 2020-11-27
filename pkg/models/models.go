@@ -19,6 +19,9 @@ var (
 
 	// ErrInvalidBin is generated when a URL contains a non-existant bin ID
 	ErrInvalidBin = errors.New("models: invalid bin")
+
+	// ErrInvalidHook is generated when a hook can't be found
+	ErrInvalidHook = errors.New("models: invalid hook")
 )
 
 // HookDocument is a BSON representation of a received webhook for storing in mongodb.
