@@ -22,6 +22,7 @@ func (app *application) routes() http.Handler {
 
 	mux.Post("/user", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.createUser))
 	mux.Post("/login", dynamicMiddleware.Append(app.requireJSON).ThenFunc(app.login))
+	mux.Post("/logout", dynamicMiddleware.Append(app.requireAuth).ThenFunc(app.logout))
 
 	mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
 

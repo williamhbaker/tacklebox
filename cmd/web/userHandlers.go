@@ -53,3 +53,7 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(infoJSON{"success"})
 }
+
+func (app *application) logout(w http.ResponseWriter, r *http.Request) {
+	app.session.Remove(r, "authenticatedUserID")
+}
