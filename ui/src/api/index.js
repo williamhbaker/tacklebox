@@ -23,3 +23,13 @@ export const logout = async () => {
   const response = await fetch(`${URL}/logout`, init);
   return response.ok;
 };
+
+export const checkStatus = async () => {
+  let init = {
+    method: 'GET',
+    credentials: 'include',
+  };
+
+  const response = await fetch(`${URL}/user`, init);
+  return response.ok ? response.json() : null;
+};

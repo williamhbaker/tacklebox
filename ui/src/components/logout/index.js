@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
-import { logout, selectUser } from 'features/user/userSlice';
+import { logout } from 'features/user/userSlice';
 
 import Section from 'components/Section';
 import Container from 'components/Container';
@@ -10,13 +10,13 @@ import Container from 'components/Container';
 const LogOut = () => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
-
-  if (!user) history.push('/');
 
   useEffect(() => {
-    dispatch(logout());
-  }, []);
+    (async () => {
+      await dispatch(logout());
+      history.push('/');
+    })();
+  });
 
   return (
     <Section>

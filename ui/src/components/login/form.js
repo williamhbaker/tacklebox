@@ -23,8 +23,6 @@ const Form = () => {
   const [fields, setFields] = useState({ email: '', password: '' });
   const [triedLogin, setTriedLogin] = useState(false);
 
-  if (user) history.push('/');
-
   const handleInputChange = (e) => {
     setFields({
       ...fields,
@@ -32,10 +30,13 @@ const Form = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setTriedLogin(true);
-    dispatch(login(fields));
+    const res = await dispatch(login(fields));
+    if (res.payload && res.payload.message) {
+      history.push('/');
+    }
   };
 
   const hasError = triedLogin && !user && !loginInProgress;

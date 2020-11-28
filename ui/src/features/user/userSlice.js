@@ -19,6 +19,14 @@ export const logout = createAsyncThunk(
   }
 );
 
+export const checkStatus = createAsyncThunk(
+  'user/checkStatus',
+  async (_, { rejectWithValue }) => {
+    const result = await api.checkStatus();
+    return result ? result : rejectWithValue();
+  }
+);
+
 // slice
 
 let initialState = {
@@ -39,15 +47,26 @@ const userSlice = createSlice({
     [login.fulfilled]: (state, action) => {
       state.user = action.payload.message;
       state.inProgress = false;
-      state.initialized = true;
     },
     [login.rejected]: (state, action) => {
       state.user = '';
       state.inProgress = false;
-      state.initialized = true;
     },
     [logout.fulfilled]: (state, action) => {
       state.user = '';
+      state.inProgress = false;
+    },
+    [checkStatus.pending]: (state, action) => {
+      state.inProgress = true;
+    },
+    [checkStatus.fulfilled]: (state, action) => {
+      state.user = action.payload.message;
+      state.initialized = true;
+      state.inProgress = false;
+    },
+    [checkStatus.rejected]: (state, action) => {
+      state.user = '';
+      state.initialized = true;
       state.inProgress = false;
     },
   },
@@ -60,4 +79,5 @@ export default userSlice.reducer;
 // selectors
 
 export const selectLoginInProgress = (state) => state.user.inProgress;
+export const selectInitialized = (state) => state.user.initialized;
 export const selectUser = (state) => state.user.user;
