@@ -23,6 +23,18 @@ export const createBin = createAsyncThunk(
   }
 );
 
+export const destroyBin = createAsyncThunk(
+  'bins/destroyBin',
+  async (binID, { dispatch, rejectWithValue }) => {
+    const result = await api.destroyBin(binID);
+    if (!result) {
+      rejectWithValue();
+    } else {
+      dispatch(getBins());
+    }
+  }
+);
+
 // slice
 
 const initialState = {

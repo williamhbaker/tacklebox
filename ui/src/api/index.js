@@ -54,3 +54,13 @@ export const createBin = async (data) => {
   const response = await fetch(`${URL}/bin`, init);
   return response.ok ? response.json() : null;
 };
+
+export const destroyBin = async (binID) => {
+  let init = {
+    method: 'DELETE',
+    credentials: 'include',
+  };
+
+  const response = await fetch(`${URL}/bin/${binID}`, init);
+  return response.ok ? response.json() : null;
+};
