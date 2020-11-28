@@ -21,7 +21,7 @@ const App = () => {
 
   useEffect(() => {
     dispatch(checkStatus());
-  }, []);
+  }, [dispatch]);
 
   return (
     <Router>

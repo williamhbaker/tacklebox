@@ -29,7 +29,7 @@ export const checkStatus = createAsyncThunk(
 
 // slice
 
-let initialState = {
+const initialState = {
   user: '',
   inProgress: false,
   initialized: false,
@@ -71,8 +71,6 @@ const userSlice = createSlice({
     },
   },
 });
-
-export const { receiveUser } = userSlice.actions;
 
 export default userSlice.reducer;
 

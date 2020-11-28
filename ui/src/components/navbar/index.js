@@ -47,7 +47,7 @@ const NavBar = () => {
           <NavBarLink
             path={'/bins'}
             icon={<FontAwesomeIcon icon={faBox} />}
-            text={'Bins'}
+            text={'All Bins'}
             onClick={closeMenu}
           ></NavBarLink>
         </div>

@@ -33,3 +33,24 @@ export const checkStatus = async () => {
   const response = await fetch(`${URL}/user`, init);
   return response.ok ? response.json() : null;
 };
+
+export const getBins = async () => {
+  let init = {
+    method: 'GET',
+    credentials: 'include',
+  };
+
+  const response = await fetch(`${URL}/user/bins`, init);
+  return response.ok ? response.json() : null;
+};
+
+export const createBin = async (data) => {
+  let init = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  };
+
+  const response = await fetch(`${URL}/bin`, init);
+  return response.ok ? response.json() : null;
+};
