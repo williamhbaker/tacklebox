@@ -24,6 +24,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/user/bins", sessionMiddleware.Append(app.requireAuth).ThenFunc(app.getUserBins))
 
 	mux.Post("/user", sessionMiddleware.Append(app.requireJSON).ThenFunc(app.createUser))
+	mux.Get("/user", sessionMiddleware.Append(app.requireAuth).ThenFunc(app.loggedInUser))
 	mux.Post("/login", sessionMiddleware.Append(app.requireJSON).ThenFunc(app.login))
 	mux.Post("/logout", sessionMiddleware.Append(app.requireAuth).ThenFunc(app.logout))
 
