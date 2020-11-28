@@ -13,3 +13,13 @@ export const login = async (data) => {
   const response = await fetch(`${URL}/login`, init);
   return response.ok ? response.json() : null;
 };
+
+export const logout = async () => {
+  let init = {
+    method: 'POST',
+    credentials: 'include',
+  };
+
+  const response = await fetch(`${URL}/logout`, init);
+  return response.ok;
+};

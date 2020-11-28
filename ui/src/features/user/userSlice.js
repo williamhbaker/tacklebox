@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as api from 'api';
 
+// thunks
+
 export const login = createAsyncThunk(
   'user/login',
   async (data, { rejectWithValue }) => {
@@ -8,6 +10,16 @@ export const login = createAsyncThunk(
     return result ? result : rejectWithValue();
   }
 );
+
+export const logout = createAsyncThunk(
+  'user/logout',
+  async (_, { rejectWithValue }) => {
+    const result = await api.logout();
+    return result ? result : rejectWithValue();
+  }
+);
+
+// slice
 
 let initialState = {
   user: '',
@@ -31,8 +43,12 @@ const userSlice = createSlice({
     },
     [login.rejected]: (state, action) => {
       state.user = '';
-      state.inProgress = true;
+      state.inProgress = false;
       state.initialized = true;
+    },
+    [logout.fulfilled]: (state, action) => {
+      state.user = '';
+      state.inProgress = false;
     },
   },
 });
@@ -40,3 +56,8 @@ const userSlice = createSlice({
 export const { receiveUser } = userSlice.actions;
 
 export default userSlice.reducer;
+
+// selectors
+
+export const selectLoginInProgress = (state) => state.user.inProgress;
+export const selectUser = (state) => state.user.user;
