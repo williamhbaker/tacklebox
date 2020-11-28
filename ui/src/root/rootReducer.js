@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 
-import binsReducer from 'features/bins/binsSlice';
+import userReducer from 'features/user/userSlice';
 
 export default combineReducers({
-  bins: binsReducer,
+  user: userReducer,
 });

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faEnvelope,
@@ -6,9 +7,12 @@ import {
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { login } from 'api';
+import { login } from 'features/user/userSlice';
+
+// import { login } from 'api';
 
 const Form = () => {
+  const dispatch = useDispatch();
   const [fields, setFields] = useState({ email: '', password: '' });
 
   const handleInputChange = (e) => {
@@ -20,7 +24,7 @@ const Form = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    login(fields);
+    dispatch(login(fields));
   };
 
   return (

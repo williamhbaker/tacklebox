@@ -51,7 +51,7 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 
 	app.session.Put(r, "authenticatedUserID", id)
 
-	json.NewEncoder(w).Encode(infoJSON{"success"})
+	json.NewEncoder(w).Encode(infoJSON{u.Email})
 }
 
 func (app *application) logout(w http.ResponseWriter, r *http.Request) {

@@ -10,7 +10,6 @@ export const login = async (data) => {
     body: json,
   };
 
-  let response = await fetch(`${URL}/login`, init);
-
-  console.log(response);
+  const response = await fetch(`${URL}/login`, init);
+  return response.ok ? response.json() : null;
 };
