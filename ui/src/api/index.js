@@ -64,3 +64,13 @@ export const destroyBin = async (binID) => {
   const response = await fetch(`${URL}/bin/${binID}`, init);
   return response.ok ? response.json() : null;
 };
+
+export const getHooks = async (binID) => {
+  let init = {
+    method: 'GET',
+    credentials: 'include',
+  };
+
+  const response = await fetch(`${URL}/bin/${binID}`, init);
+  return response.ok ? response.json() : null;
+};
