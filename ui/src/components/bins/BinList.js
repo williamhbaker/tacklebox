@@ -9,6 +9,8 @@ import {
   selectActiveBin,
 } from 'features/bins/binsSlice';
 
+import { selectUser } from 'features/user/userSlice';
+
 import { selectHooksInProgress } from 'features/hooks/hooksSlice';
 
 import Bin from './Bin';
@@ -17,6 +19,7 @@ const BinList = () => {
   const dispatch = useDispatch();
   const bins = useSelector(selectBins);
   const activeBin = useSelector(selectActiveBin);
+  const user = useSelector(selectUser);
   const binLoadingInProgress = useSelector(selectBinsLoadingInProgress);
   const hookLoadingInProgress = useSelector(selectHooksInProgress);
 
@@ -37,14 +40,18 @@ const BinList = () => {
 
   return (
     <>
-      <button
-        className={`button mb-3 is-info ${
-          binLoadingInProgress && 'is-loading'
-        }`}
-        onClick={handleCreateNewBin}
-      >
-        Create New Bin
-      </button>
+      {user ? (
+        <button
+          className={`button mb-3 is-info ${
+            binLoadingInProgress && 'is-loading'
+          }`}
+          onClick={handleCreateNewBin}
+        >
+          Create New Bin
+        </button>
+      ) : (
+        <p>You need to log in to create a bin.</p>
+      )}
       <br />
       <table className="table">
         <tbody>

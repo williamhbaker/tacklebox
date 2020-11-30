@@ -7,7 +7,11 @@ import {
   Redirect,
 } from 'react-router-dom';
 
-import { checkStatus, selectInitialized } from 'features/user/userSlice';
+import {
+  checkStatus,
+  selectInitialized,
+  selectLoginInProgress,
+} from 'features/user/userSlice';
 
 import NavBar from 'components/navbar';
 import LogInForm from 'components/login';
@@ -19,10 +23,13 @@ import Loading from 'components/loading';
 const App = () => {
   const dispatch = useDispatch();
   const initialized = useSelector(selectInitialized);
+  const inProgress = useSelector(selectLoginInProgress);
 
   useEffect(() => {
-    dispatch(checkStatus());
-  }, [dispatch]);
+    if (!initialized && !inProgress) {
+      dispatch(checkStatus());
+    }
+  });
 
   return (
     <Router>
