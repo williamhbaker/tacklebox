@@ -18,6 +18,7 @@ import LogInForm from 'components/login';
 import LogOut from 'components/logout';
 import Bins from 'components/bins';
 import Bin from 'components/bin';
+import SignUp from 'components/signup';
 import Loading from 'components/loading';
 
 const App = () => {
@@ -49,6 +50,9 @@ const App = () => {
             </Route>
             <Route exact path="/bin/:id">
               <Bin />
+            </Route>
+            <Route exact path="/signUp">
+              <SignUp />
             </Route>
             <Route path="*">
               <Redirect to="/bins" />

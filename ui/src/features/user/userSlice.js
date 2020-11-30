@@ -11,6 +11,14 @@ export const login = createAsyncThunk(
   }
 );
 
+export const signUp = createAsyncThunk(
+  'user/signUp',
+  async (data, { rejectWithValue }) => {
+    const result = await api.signUp(data);
+    return result ? result : rejectWithValue();
+  }
+);
+
 export const logout = createAsyncThunk(
   'user/logout',
   async (_, { rejectWithValue }) => {
@@ -33,12 +41,17 @@ const initialState = {
   user: '',
   inProgress: false,
   initialized: false,
+  message: '',
 };
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {},
+  reducers: {
+    setMessage(state, action) {
+      state.message = action.payload;
+    },
+  },
   extraReducers: {
     [login.pending]: (state, action) => {
       state.user = '';
@@ -47,9 +60,20 @@ const userSlice = createSlice({
     [login.fulfilled]: (state, action) => {
       state.user = action.payload.message;
       state.inProgress = false;
+      state.message = '';
     },
     [login.rejected]: (state, action) => {
       state.user = '';
+      state.inProgress = false;
+      state.message = '';
+    },
+    [signUp.pending]: (state, action) => {
+      state.inProgress = true;
+    },
+    [signUp.fulfilled]: (state, action) => {
+      state.inProgress = false;
+    },
+    [signUp.rejected]: (state, action) => {
       state.inProgress = false;
     },
     [logout.fulfilled]: (state, action) => {
@@ -72,6 +96,8 @@ const userSlice = createSlice({
   },
 });
 
+export const { setMessage } = userSlice.actions;
+
 export default userSlice.reducer;
 
 // selectors
@@ -79,3 +105,4 @@ export default userSlice.reducer;
 export const selectLoginInProgress = (state) => state.user.inProgress;
 export const selectInitialized = (state) => state.user.initialized;
 export const selectUser = (state) => state.user.user;
+export const selectMessage = (state) => state.user.message;

@@ -12,6 +12,8 @@ import {
   login,
   selectLoginInProgress,
   selectUser,
+  selectMessage,
+  setMessage,
 } from 'features/user/userSlice';
 
 const Form = () => {
@@ -19,6 +21,7 @@ const Form = () => {
   const dispatch = useDispatch();
   const loginInProgress = useSelector(selectLoginInProgress);
   const user = useSelector(selectUser);
+  const message = useSelector(selectMessage);
 
   const [fields, setFields] = useState({ email: '', password: '' });
   const [triedLogin, setTriedLogin] = useState(false);
@@ -42,78 +45,83 @@ const Form = () => {
   const hasError = triedLogin && !user && !loginInProgress;
 
   return (
-    <form
-      style={{ maxWidth: '30rem', margin: '0 auto' }}
-      onSubmit={handleSubmit}
-    >
-      <fieldset disabled={loginInProgress}>
-        <div className="field">
-          <label className="label">Email</label>
-          <div className={'control has-icons-right has-icons-left'}>
-            <input
-              name={'email'}
-              className={`input ${hasError && 'is-danger'}`}
-              value={fields.email}
-              placeholder={'user@domain.com'}
-              type={'text'}
-              onChange={handleInputChange}
-            />
-            <span className="icon is-left">
-              <FontAwesomeIcon icon={faEnvelope} />
-            </span>
-            <span className="icon is-right">
-              {hasError && <FontAwesomeIcon icon={faExclamationTriangle} />}
-            </span>
+    <>
+      <h3 className="mb-3 has-text-info">{message}</h3>
+      <form
+        style={{ maxWidth: '30rem', margin: '0 auto' }}
+        onSubmit={handleSubmit}
+      >
+        <fieldset disabled={loginInProgress}>
+          <div className="field">
+            <label className="label">Email</label>
+            <div className={'control has-icons-right has-icons-left'}>
+              <input
+                name={'email'}
+                className={`input ${hasError && 'is-danger'}`}
+                value={fields.email}
+                placeholder={'user@domain.com'}
+                type={'text'}
+                onChange={handleInputChange}
+              />
+              <span className="icon is-left">
+                <FontAwesomeIcon icon={faEnvelope} />
+              </span>
+              <span className="icon is-right">
+                {hasError && <FontAwesomeIcon icon={faExclamationTriangle} />}
+              </span>
+            </div>
+            <p className="help is-danger">
+              {(hasError && 'invalid credentials') || <>&nbsp;</>}
+            </p>
           </div>
-          <p className="help is-danger">
-            {(hasError && 'invalid credentials') || <>&nbsp;</>}
-          </p>
-        </div>
 
-        <div className="field">
-          <label className="label">Password</label>
-          <div className={'control has-icons-right has-icons-left'}>
-            <input
-              name={'password'}
-              className={`input ${hasError && 'is-danger'}`}
-              value={fields.password}
-              type={'password'}
-              onChange={handleInputChange}
-            />
-            <span className="icon is-left">
-              <FontAwesomeIcon icon={faLock} />
-            </span>
-            <span className="icon is-right">
-              {hasError && <FontAwesomeIcon icon={faExclamationTriangle} />}
-            </span>
+          <div className="field">
+            <label className="label">Password</label>
+            <div className={'control has-icons-right has-icons-left'}>
+              <input
+                name={'password'}
+                className={`input ${hasError && 'is-danger'}`}
+                value={fields.password}
+                type={'password'}
+                onChange={handleInputChange}
+              />
+              <span className="icon is-left">
+                <FontAwesomeIcon icon={faLock} />
+              </span>
+              <span className="icon is-right">
+                {hasError && <FontAwesomeIcon icon={faExclamationTriangle} />}
+              </span>
+            </div>
+            <p className="help is-danger">
+              {(hasError && 'invalid credentials') || <>&nbsp;</>}
+            </p>
           </div>
-          <p className="help is-danger">
-            {(hasError && 'invalid credentials') || <>&nbsp;</>}
-          </p>
-        </div>
 
-        <div className="field is-grouped">
-          <p className="control is-expanded">
-            <button
-              className={`button is-primary ${loginInProgress && 'is-loading'}`}
-              style={{ width: '100%' }}
-              type="submit"
-            >
-              Submit
-            </button>
-          </p>
-          <p className="control is-expanded">
-            <button
-              type="button"
-              className="button is-light"
-              style={{ width: '100%' }}
-            >
-              Cancel
-            </button>
-          </p>
-        </div>
-      </fieldset>
-    </form>
+          <div className="field is-grouped">
+            <p className="control is-expanded">
+              <button
+                className={`button is-primary ${
+                  loginInProgress && 'is-loading'
+                }`}
+                style={{ width: '100%' }}
+                type="submit"
+              >
+                Submit
+              </button>
+            </p>
+            <p className="control is-expanded">
+              <button
+                type="button"
+                className="button is-light"
+                style={{ width: '100%' }}
+              >
+                Cancel
+              </button>
+            </p>
+          </div>
+        </fieldset>
+      </form>
+    </>
   );
 };
 
