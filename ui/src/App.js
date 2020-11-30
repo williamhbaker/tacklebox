@@ -1,36 +1,69 @@
-function App() {
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect,
+} from 'react-router-dom';
+
+import {
+  checkStatus,
+  selectInitialized,
+  selectLoginInProgress,
+} from 'features/user/userSlice';
+
+import NavBar from 'components/navbar';
+import LogInForm from 'components/login';
+import LogOut from 'components/logout';
+import Bins from 'components/bins';
+import Bin from 'components/bin';
+import SignUp from 'components/signup';
+import Loading from 'components/loading';
+
+const App = () => {
+  const dispatch = useDispatch();
+  const initialized = useSelector(selectInitialized);
+  const inProgress = useSelector(selectLoginInProgress);
+
+  useEffect(() => {
+    if (!initialized && !inProgress) {
+      dispatch(checkStatus());
+    }
+  });
+
   return (
-    <>
-      <h1 className="title">Bulma</h1>
-      <p className="subtitle">
-        Modern CSS framework based on{' '}
-        <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox">
-          Flexbox
-        </a>
-      </p>
+    <Router>
+      {initialized ? (
+        <>
+          <NavBar />
 
-      <div className="field">
-        <div className="control">
-          <input className="input" type="text" placeholder="Input" />
-        </div>
-      </div>
-
-      <div className="field">
-        <p className="control">
-          <span className="select">
-            <select>
-              <option>Select dropdown</option>
-            </select>
-          </span>
-        </p>
-      </div>
-
-      <div className="buttons">
-        <a className="button is-primary">Primary</a>
-        <a className="button is-link">Link</a>
-      </div>
-    </>
+          <Switch>
+            <Route exact path="/login">
+              <LogInForm />
+            </Route>
+            <Route exact path="/logout">
+              <LogOut />
+            </Route>
+            <Route exact path="/bins">
+              <Bins />
+            </Route>
+            <Route exact path="/bin/:id">
+              <Bin />
+            </Route>
+            <Route exact path="/signUp">
+              <SignUp />
+            </Route>
+            <Route path="*">
+              <Redirect to="/bins" />
+            </Route>
+          </Switch>
+        </>
+      ) : (
+        <Loading />
+      )}
+    </Router>
   );
-}
+};
 
 export default App;

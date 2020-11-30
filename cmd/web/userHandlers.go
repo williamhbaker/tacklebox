@@ -51,9 +51,22 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 
 	app.session.Put(r, "authenticatedUserID", id)
 
-	json.NewEncoder(w).Encode(infoJSON{"success"})
+	json.NewEncoder(w).Encode(infoJSON{u.Email})
 }
 
 func (app *application) logout(w http.ResponseWriter, r *http.Request) {
 	app.session.Remove(r, "authenticatedUserID")
+}
+
+func (app *application) loggedInUser(w http.ResponseWriter, r *http.Request) {
+	id := app.session.GetInt(r, "authenticatedUserID")
+
+	u, err := app.users.Get(id)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(infoJSON{u.Email})
 }
