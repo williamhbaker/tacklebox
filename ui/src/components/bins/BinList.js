@@ -6,14 +6,19 @@ import {
   selectBins,
   createBin,
   selectBinsLoadingInProgress,
+  selectActiveBin,
 } from 'features/bins/binsSlice';
+
+import { selectHooksInProgress } from 'features/hooks/hooksSlice';
 
 import Bin from './Bin';
 
 const BinList = () => {
   const dispatch = useDispatch();
   const bins = useSelector(selectBins);
+  const activeBin = useSelector(selectActiveBin);
   const binLoadingInProgress = useSelector(selectBinsLoadingInProgress);
+  const hookLoadingInProgress = useSelector(selectHooksInProgress);
 
   useEffect(() => {
     dispatch(getBins());
@@ -44,7 +49,13 @@ const BinList = () => {
       <table className="table">
         <tbody>
           {sortedBins.map((bin) => (
-            <Bin key={bin.ID} id={bin.ID} created={bin.Created} />
+            <Bin
+              key={bin.ID}
+              id={bin.ID}
+              created={bin.Created}
+              active={bin.ID === activeBin}
+              inProgress={hookLoadingInProgress}
+            />
           ))}
         </tbody>
       </table>

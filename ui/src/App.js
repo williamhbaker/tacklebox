@@ -13,6 +13,7 @@ import NavBar from 'components/navbar';
 import LogInForm from 'components/login';
 import LogOut from 'components/logout';
 import Bins from 'components/bins';
+import Bin from 'components/bin';
 import Loading from 'components/loading';
 
 const App = () => {
@@ -38,6 +39,9 @@ const App = () => {
             </Route>
             <Route exact path="/bins">
               <Bins />
+            </Route>
+            <Route exact path="/bin/:id">
+              <Bin />
             </Route>
             <Route path="*">
               <Redirect to="/bins" />

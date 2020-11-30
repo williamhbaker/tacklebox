@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
 import * as api from 'api';
+import { activateBin } from 'features/hooks/hooksSlice';
 
 // thunks
 
@@ -40,6 +42,7 @@ export const destroyBin = createAsyncThunk(
 const initialState = {
   inProgress: false,
   bins: [],
+  activeBin: '',
 };
 
 const binsSlice = createSlice({
@@ -48,6 +51,7 @@ const binsSlice = createSlice({
   reducers: {},
   extraReducers: {
     [getBins.pending]: (state, action) => {
+      state.activeBin = '';
       state.inProgress = true;
     },
     [getBins.fulfilled]: (state, action) => {
@@ -63,6 +67,9 @@ const binsSlice = createSlice({
     [createBin.rejected]: (state, action) => {
       state.inProgress = false;
     },
+    [activateBin.fulfilled]: (state, action) => {
+      state.activeBin = action.meta.arg;
+    },
   },
 });
 
@@ -72,3 +79,4 @@ export default binsSlice.reducer;
 
 export const selectBinsLoadingInProgress = (state) => state.bins.inProgress;
 export const selectBins = (state) => state.bins.bins;
+export const selectActiveBin = (state) => state.bins.activeBin;

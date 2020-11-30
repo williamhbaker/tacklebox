@@ -3,21 +3,21 @@ import { useDispatch } from 'react-redux';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-
+import { useHistory } from 'react-router-dom';
 import { destroyBin } from 'features/bins/binsSlice';
-import { getHooks } from 'features/hooks/hooksSlice';
 
-const Bin = ({ id, created }) => {
+const Bin = ({ id, created, active, inProgress }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
 
   const handleDestroyClick = (e, id) => {
     e.preventDefault();
     dispatch(destroyBin(id));
   };
 
-  const handleBinClick = (e, id) => {
+  const handleBinClick = async (e, id) => {
     e.preventDefault();
-    dispatch(getHooks(id));
+    history.push(`/bin/${id}`);
   };
 
   return (
@@ -25,7 +25,9 @@ const Bin = ({ id, created }) => {
       <td>
         <button
           onClick={(e) => handleBinClick(e, id)}
-          className="button is-link is-light"
+          className={`button ${active ? 'is-primary' : 'is-link is-light'} ${
+            inProgress && 'is-loading'
+          }`}
         >
           {id}
         </button>

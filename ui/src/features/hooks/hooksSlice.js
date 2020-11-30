@@ -3,8 +3,8 @@ import * as api from 'api';
 
 // thunks
 
-export const getHooks = createAsyncThunk(
-  'hooks/getHooks',
+export const activateBin = createAsyncThunk(
+  'hooks/activateBin',
   async (binID, { rejectWithValue }) => {
     const result = await api.getHooks(binID);
     return result ? result : rejectWithValue();
@@ -23,14 +23,14 @@ const hooksSlice = createSlice({
   initialState: initialState,
   reducers: {},
   extraReducers: {
-    [getHooks.pending]: (state, action) => {
+    [activateBin.pending]: (state, action) => {
       state.inProgress = true;
     },
-    [getHooks.fulfilled]: (state, action) => {
+    [activateBin.fulfilled]: (state, action) => {
       state.hooks = action.payload;
       state.inProgress = false;
     },
-    [getHooks.rejected]: (state, action) => {
+    [activateBin.rejected]: (state, action) => {
       state.inProgress = false;
     },
   },
@@ -41,6 +41,4 @@ export default hooksSlice.reducer;
 // selectors
 
 export const selectHooks = (state) => state.hooks.hooks;
-
-// export const selectBinsLoadingInProgress = (state) => state.bins.inProgress;
-// export const selectBins = (state) => state.bins.bins;
+export const selectHooksInProgress = (state) => state.hooks.inProgress;

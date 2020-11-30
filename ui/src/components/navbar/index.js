@@ -6,9 +6,11 @@ import {
   faSignInAlt,
   faSignOutAlt,
   faUserPlus,
+  faAngleDoubleRight,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { selectUser } from 'features/user/userSlice';
+import { selectActiveBin } from 'features/bins/binsSlice';
 
 import NavBarLink from './NavBarLink';
 
@@ -18,6 +20,7 @@ const NavBar = () => {
   });
 
   const user = useSelector(selectUser);
+  const activeBin = useSelector(selectActiveBin);
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -50,6 +53,14 @@ const NavBar = () => {
             text={'All Bins'}
             onClick={closeMenu}
           ></NavBarLink>
+          {activeBin && (
+            <NavBarLink
+              path={`/bin/${activeBin}`}
+              icon={<FontAwesomeIcon icon={faAngleDoubleRight} />}
+              text={activeBin}
+              onClick={closeMenu}
+            ></NavBarLink>
+          )}
         </div>
         <div className="navbar-end">
           {user ? (
