@@ -1,24 +1,28 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { selectHooks } from 'features/hooks/hooksSlice';
-import { activateBin } from 'features/hooks/hooksSlice';
+import {
+  selectHooks,
+  activateBin,
+  selectActiveHook,
+} from 'features/hooks/hooksSlice';
 
-import Hook from './Hook';
+import HookLink from './HookLink';
 
 const Hooklist = ({ id }) => {
   const dispatch = useDispatch();
   const hooks = useSelector(selectHooks);
+  const activeHook = useSelector(selectActiveHook);
 
   useEffect(() => {
     dispatch(activateBin(id));
   }, [dispatch, id]);
 
   return (
-    <table>
+    <table className="table">
       <tbody>
         {hooks.map((hook) => {
-          return <Hook key={hook.ID} id={hook.ID} />;
+          return <HookLink key={hook} id={hook} active={activeHook === hook} />;
         })}
       </tbody>
     </table>

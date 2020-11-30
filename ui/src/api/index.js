@@ -74,3 +74,13 @@ export const getHooks = async (binID) => {
   const response = await fetch(`${URL}/bin/${binID}`, init);
   return response.ok ? response.json() : null;
 };
+
+export const deleteHook = async (hookID) => {
+  let init = {
+    method: 'DELETE',
+    credentials: 'include',
+  };
+
+  const response = await fetch(`${URL}/hook/${hookID}`, init);
+  return response.ok ? response.json() : null;
+};

@@ -25,9 +25,7 @@ const Bin = ({ id, created, active, inProgress }) => {
       <td>
         <button
           onClick={(e) => handleBinClick(e, id)}
-          className={`button ${active ? 'is-primary' : 'is-link is-light'} ${
-            inProgress && 'is-loading'
-          }`}
+          className={`button 'is-link is-light`}
         >
           {id}
         </button>
