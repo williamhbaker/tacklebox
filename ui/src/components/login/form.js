@@ -13,7 +13,6 @@ import {
   selectLoginInProgress,
   selectUser,
   selectMessage,
-  setMessage,
 } from 'features/user/userSlice';
 
 const Form = () => {

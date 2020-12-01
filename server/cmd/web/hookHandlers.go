@@ -11,10 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello from home"))
-}
-
 func (app *application) postHook(w http.ResponseWriter, r *http.Request) {
 	binID := r.URL.Query().Get(":binID")
 	if binID == "" {

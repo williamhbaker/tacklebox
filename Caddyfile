@@ -1,0 +1,8 @@
+{$HOSTNAME}
+
+route /api/* {
+	uri strip_prefix /api
+	reverse_proxy server:4000
+}
+
+reverse_proxy ui:80

@@ -5,15 +5,11 @@ services:
     image: mongo
     restart: always
     container_name: 'mongo'
-    ports:
-      - '27017:27017'
 
   postgres:
     image: postgres
     restart: always
     container_name: 'pg'
-    ports:
-      - '5432:5432'
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
@@ -21,16 +17,28 @@ services:
     volumes:
       - ./dbinit/postgres:/docker-entrypoint-initdb.d/:ro
 
-  mongoadmin:
-    image: mongo-express
-    restart: always
-    container_name: 'mongoadmin'
+  caddy:
+    image: caddy:2.1.1-alpine
     ports:
-      - '8081:8081'
+      - 80:80
+      - 443:443
+    environment:
+      - HOSTNAME=${HOSTNAME}
+    volumes:
+      - caddy:/data
+      - ./Caddyfile:/etc/caddy/Caddyfile
 
-  adminer:
-    image: adminer
+  ui:
+    build:
+      context: ./ui
+      args:
+        - REACT_APP_ENDPOINT=${REACT_APP_ENDPOINT}
     restart: always
-    container_name: 'postgresadmin'
-    ports:
-      - '8080:8080'
+
+  server:
+    build:
+      context: ./server
+    restart: always
+
+volumes:
+  caddy:
