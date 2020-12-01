@@ -1,8 +1,8 @@
-tacklebox.duckdns.org
+{$HOSTNAME}
 
 route /api/* {
 	uri strip_prefix /api
-	reverse_proxy localhost:4000
+	reverse_proxy server:4000
 }
 
-reverse_proxy localhost:3000
+reverse_proxy ui:80

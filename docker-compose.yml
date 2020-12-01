@@ -5,15 +5,11 @@ services:
     image: mongo
     restart: always
     container_name: 'mongo'
-    ports:
-      - '27017:27017'
 
   postgres:
     image: postgres
     restart: always
     container_name: 'pg'
-    ports:
-      - '5432:5432'
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
@@ -26,10 +22,23 @@ services:
     ports:
       - 80:80
       - 443:443
+    environment:
+      - HOSTNAME=${HOSTNAME}
     volumes:
       - caddy:/data
       - ./Caddyfile:/etc/caddy/Caddyfile
-    network_mode: 'host'
+
+  ui:
+    build:
+      context: ./ui
+      args:
+        - REACT_APP_ENDPOINT=${REACT_APP_ENDPOINT}
+    restart: always
+
+  server:
+    build:
+      context: ./server
+    restart: always
 
 volumes:
   caddy:

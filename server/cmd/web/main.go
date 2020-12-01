@@ -43,8 +43,8 @@ func main() {
 
 	flag.IntVar(&port, "port", 4000, "Port to start the server listening on")
 	flag.StringVar(&secret, "secret", "cookiesecret!", "Secret key for session cookies")
-	flag.StringVar(&pgDSN, "pgDSN", "postgres://postgres:postgres@localhost/postgres?sslmode=disable", "Connection string for postgres")
-	flag.StringVar(&mongoDSN, "mongoDSN", "mongodb://localhost:27017", "Connection string for MongoDB")
+	flag.StringVar(&pgDSN, "pgDSN", "postgres://postgres:postgres@postgres/postgres?sslmode=disable", "Connection string for postgres")
+	flag.StringVar(&mongoDSN, "mongoDSN", "mongodb://mongo:27017", "Connection string for MongoDB")
 	flag.Parse()
 
 	addr := fmt.Sprintf(":%v", port)

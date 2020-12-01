@@ -21,6 +21,7 @@ const Bin = () => {
         {user ? (
           <>
             <Header>Hooks for {id}</Header>
+            <p>{`${window.location.protocol}//${window.location.hostname}/api/hook/${id}`}</p>
             <div className="columns">
               <div className="column">
                 <HookList id={id} />
