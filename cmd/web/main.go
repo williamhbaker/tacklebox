@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
 	_ "github.com/lib/pq"
 
-	"github.com/caddyserver/certmagic"
 	"github.com/golangcollege/sessions"
 	"github.com/namsral/flag"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -40,18 +40,14 @@ func main() {
 	var secret string
 	var pgDSN string
 	var mongoDSN string
-	var domain string
-	var email string
-	var staging bool
 
-	flag.IntVar(&port, "port", 443, "Port to start the server listening on")
+	flag.IntVar(&port, "port", 4000, "Port to start the server listening on")
 	flag.StringVar(&secret, "secret", "cookiesecret!", "Secret key for session cookies")
 	flag.StringVar(&pgDSN, "pgDSN", "postgres://postgres:postgres@localhost/postgres?sslmode=disable", "Connection string for postgres")
 	flag.StringVar(&mongoDSN, "mongoDSN", "mongodb://localhost:27017", "Connection string for MongoDB")
-	flag.StringVar(&domain, "domain", "", "Domain to request a certificate for")
-	flag.StringVar(&email, "email", "email@domain.com", "Email to use with lets encrypt")
-	flag.BoolVar(&staging, "staging", false, "Staging for certs")
 	flag.Parse()
+
+	addr := fmt.Sprintf(":%v", port)
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
@@ -86,15 +82,17 @@ func main() {
 		bins:        &postgres.BinModel{DB: pgDB},
 	}
 
-	certmagic.DefaultACME.Agreed = true
-	certmagic.DefaultACME.Email = email
-	if staging {
-		fmt.Println(staging)
-		certmagic.DefaultACME.CA = certmagic.LetsEncryptStagingCA
+	srv := &http.Server{
+		Addr:         addr,
+		ErrorLog:     errorLog,
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
-	infoLog.Printf("Server starting")
-	err = certmagic.HTTPS([]string{domain}, app.routes())
+	infoLog.Printf("Starting server on %s", addr)
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
 

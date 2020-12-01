@@ -3,6 +3,7 @@ module github.com/wbaker85/tacklebox
 go 1.15
 
 require (
+	github.com/GeertJohan/go.rice v1.0.0
 	github.com/bmizerany/pat v0.0.0-20170815010413-6226ea591a40
 	github.com/caddyserver/certmagic v0.12.0
 	github.com/golangcollege/sessions v1.2.0

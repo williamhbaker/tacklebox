@@ -28,7 +28,5 @@ func (app *application) routes() http.Handler {
 	mux.Post("/login", sessionMiddleware.Append(app.requireJSON).ThenFunc(app.login))
 	mux.Post("/logout", sessionMiddleware.Append(app.requireAuth).ThenFunc(app.logout))
 
-	mux.Get("/", sessionMiddleware.ThenFunc(app.home))
-
 	return standardMiddleware.Then(mux)
 }

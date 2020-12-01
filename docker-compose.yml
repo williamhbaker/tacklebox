@@ -21,16 +21,15 @@ services:
     volumes:
       - ./dbinit/postgres:/docker-entrypoint-initdb.d/:ro
 
-  mongoadmin:
-    image: mongo-express
-    restart: always
-    container_name: 'mongoadmin'
+  caddy:
+    image: caddy:2.1.1-alpine
     ports:
-      - '8081:8081'
+      - 80:80
+      - 443:443
+    volumes:
+      - caddy:/data
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    network_mode: 'host'
 
-  adminer:
-    image: adminer
-    restart: always
-    container_name: 'postgresadmin'
-    ports:
-      - '8080:8080'
+volumes:
+  caddy:
