@@ -1,4 +1,4 @@
-FROM node:lts-alpine as build
+FROM node:14 as build
 ARG REACT_APP_ENDPOINT
 ENV REACT_APP_ENDPOINT $REACT_APP_ENDPOINT
 WORKDIR /app
